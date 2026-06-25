@@ -347,11 +347,163 @@ function renderReport(){
   setTimeout(()=>DOMAINS.forEach(d=>{const cv=document.getElementById(`chart-${d.key}`);if(!cv)return;charts.push(new Chart(cv,{type:"radar",data:{labels:ELEMENTS.map(e=>e.key),datasets:[{label:"Now",data:ELEMENTS.map(e=>r.scores[d.key][e.key].now),borderColor:d.color,backgroundColor:`${d.color}22`,pointBackgroundColor:d.color,borderWidth:2},{label:"Desired",data:ELEMENTS.map(e=>r.scores[d.key][e.key].desired),borderColor:`${d.color}99`,backgroundColor:`${d.color}10`,pointBackgroundColor:`${d.color}99`,borderDash:[5,4],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:5,ticks:{stepSize:1,display:false},pointLabels:{color:"#4b433e",font:{weight:"700"}}}},plugins:{legend:{position:"bottom"}}}}));}),60);
 }
 
-function domainReportHtml(d,r){const ranked=ELEMENTS.map(e=>({element:e,...r.scores[d.key][e.key]})).sort((a,b)=>b.abs-a.abs),main=ranked[0],balanced=ranked.filter(i=>i.abs<.5).map(i=>i.element.key);return `<section class="panel domain"><h3>${d.label}</h3><p>${domainNarrative(d,ranked)}</p><div class="chart-wrap"><canvas id="chart-${d.key}"></canvas></div><div class="callout"><h3>Core question</h3><p>${coreQuestion(d,main)}</p></div>${balanced.length?`<p><strong>What already has steadiness:</strong> ${balanced.join(", ")} seem relatively close to your desired balance.</p>`:""}</section>`}
-function domainNarrative(d,ranked){const m=ranked[0],movement=m.diff>0?TEXT[m.element.key].plus:TEXT[m.element.key].minus,second=ranked[1],contrast=second&&second.abs>=.75?` ${second.element.key} adds a second layer to the theme.`:"";if(d.key==="Private")return `In your private life, ${m.element.key} stands out most. The longing is for ${movement}. This touches how you take up space in relationships, routines and closeness.${contrast}`;if(d.key==="Work")return `At work, ${m.element.key} becomes the clearest signal. It invites you to examine where your professional role does or does not match what you actually need: ${movement}.${contrast}`;return `In personal development, ${m.element.key} shows where growth is asking for attention. This is less about performing and more about allowing what is already emerging: ${movement}.${contrast}`}
-function coreQuestion(d,item){const questions={Ether:"Where do you make real space to hear what is true before moving on?",Air:"Where could more lightness and movement arise without turning into restlessness?",Fire:"What would change if your desire, boundary or ambition became more visible?",Water:"Which connection asks for more honesty, grounding or reciprocity?",Earth:"What concrete form, rhythm or choice would help your insight land?"};return `Because ${item.element.key} in ${d.label} ${item.diff>0?"wants more room":"may be less central than it is now"}: ${questions[item.element.key]}`}
-function nextStepText(r){const top=r.topMoves[0];if(state.person.goal==="Concrete first step")return `Begin with ${top.element.key} in ${top.domain.label}. Not because everything else is irrelevant, but because this is where current reality and desire differ most.`;if(state.person.goal==="Conversation starter")return `Use this profile as language for a conversation about what is often left unnamed: where strength is visible, where you hold back and what support is needed.`;return `This scan is a starting point, not a final verdict. The most valuable next step is to explore the strongest signal before trying to solve it.`}
-function actionItems(r){const top=r.topMoves[0];const actions=[`Choose one situation this week where ${top.element.key} in ${top.domain.label} receives conscious attention.`,`Write down which old pattern usually takes the lead there.`,`Choose one micro-action of no more than 15 minutes that supports ${top.diff>0?TEXT[top.element.key].plus:TEXT[top.element.key].minus}.`];if(r.patterns[0])actions.push(`Bring the phrase "${r.patterns[0].title}" into coaching, journaling or peer reflection.`);return actions}
+function domainReportHtml(d,r){const ranked=ELEMENTS.map(e=>({element:e,...r.scores[d.key][e.key]})).sort((a,b)=>b.abs-a.abs),main=ranked[0],balanced=ranked.filter(i=>i.abs<.5);const balancedNote=balanced.length?`<p><strong>What already feels settled here:</strong> ${balanced.map(i=>PLAIN_LABELS[i.element.key]).join(", ")} — the gap between current reality and desired state is small in these areas.</p>`:"";return `<section class="panel domain"><h3>${d.label}</h3><p>${domainNarrative(d,ranked)}</p><div class="chart-wrap"><canvas id="chart-${d.key}"></canvas></div><div class="callout"><h3>The question worth sitting with</h3><p>${coreQuestion(d,main)}</p></div>${balancedNote}</section>`}
+
+const PLAIN_LABELS={
+  Ether:"inner stillness and meaning",
+  Air:"creativity and adaptability",
+  Fire:"direction and decisiveness",
+  Water:"connection and emotional depth",
+  Earth:"structure and follow-through"
+};
+
+const PLAIN_NARRATIVES={
+  Private:{
+    Ether:{
+      want:"In your private life, the clearest signal is a longing for more inner quiet — real time and space to connect with what actually matters to you, beyond the daily rush. You want to feel more grounded in who you are and what gives your life meaning.",
+      have:"In your private life, there is a strong current of reflection and inner awareness — but the question is whether that inward focus is fully translating into how you show up in your relationships and daily rhythms."
+    },
+    Air:{
+      want:"In your private life, something wants more room to breathe. The spontaneity, the lightness, the moments that don't serve any purpose except being alive — those feel scarcer than you'd like.",
+      have:"Your private life has a lot of movement and change. The signal here is about finding more stillness and rootedness within that — not less engagement, but a clearer anchor within it."
+    },
+    Fire:{
+      want:"In your private life, you want to feel more alive — more energy, more passion, clearer about what you want and bolder about going after it. Something in you is waiting to take up more space.",
+      have:"You bring a lot of drive and intensity to your personal life — the question your profile raises is whether that energy is sustainable, or whether you are pushing in a way that slowly narrows rather than opens."
+    },
+    Water:{
+      want:"In your private life, the longing is for deeper connection — real intimacy, the kind of presence where you feel genuinely known and where you can fully show up for others without holding something back.",
+      have:"Connection is already a strength in your private life. The signal here is about boundaries — making sure that your care for others doesn't come at the expense of your own inner clarity."
+    },
+    Earth:{
+      want:"In your private life, you want more stability — a rhythm that holds, routines that ground you, the sense that your daily life has a structure that supports rather than drains you.",
+      have:"Your private life has a solid, stable foundation. The question is whether that structure has become so fixed that it leaves little room for spontaneity, surprise, or genuine renewal."
+    }
+  },
+  Work:{
+    Ether:{
+      want:"At work, what stands out most is the absence of real space to think. Not time to produce — time to reflect, to ask why, to reconnect with what actually matters about the work you do. That depth is missing.",
+      have:"You bring a reflective, purposeful quality to your work — the question is whether you are translating that inner clarity into visible action and presence with others."
+    },
+    Air:{
+      want:"At work, something wants more room to move. The routine has become too predictable, the environment not open enough to fresh ideas or creative energy. You want more stimulation, more possibility.",
+      have:"There is a lot of creative movement and flexibility in your work — but the signal here is about landing things. Ideas need follow-through to create real impact."
+    },
+    Fire:{
+      want:"At work, the clearest signal is around visibility and decisiveness. You want to take up more space — to speak your opinion, hold your ground, lead more from your own conviction rather than adapting to what seems expected.",
+      have:"You bring strong drive and direction to your work. The question your profile raises is whether that drive leaves enough room for others — for their pace, their input, their own authority."
+    },
+    Water:{
+      want:"At work, what is missing is real human connection. Not politeness — actual attunement: the sense that people see each other, that difficult things can be named, that the relational quality of the work gets as much attention as the output.",
+      have:"You are already someone who brings warmth and attentiveness to your professional relationships. The invitation here is to pair that with clearer boundaries — knowing when to connect and when to hold your own ground."
+    },
+    Earth:{
+      want:"At work, you want more concreteness — clearer structure, more follow-through, a greater sense that what you start actually gets finished and lands somewhere real. The gap between ideas and results feels too wide.",
+      have:"You are reliable and structured at work — things get done. The question is whether that focus on execution is leaving room for the bigger picture: meaning, direction, and renewal."
+    }
+  },
+  Development:{
+    Ether:{
+      want:"In your personal development, the clearest gap is around inner space. You want time and room to truly reflect — not to produce insights, but to let something deeper emerge. That quality of genuine stillness is largely absent right now.",
+      have:"You have a strong reflective inner life. The invitation now is to ground that awareness in concrete choices and visible change — not just understanding yourself, but acting from it."
+    },
+    Air:{
+      want:"In your personal development, something wants more freedom — the permission to explore, to try things without knowing where they lead, to follow curiosity without a predetermined outcome. Your development has become a little too planned.",
+      have:"You have a natural curiosity and willingness to try new things. The signal here is about depth — following one thread far enough to really develop something, rather than always moving on."
+    },
+    Fire:{
+      want:"In your personal development, the signal is about courage — the willingness to name what you actually want to become, set a real direction, and stop waiting for the perfect moment to start.",
+      have:"You have real drive in your development — you know what you want and you pursue it. The question is whether that ambition is leaving room for the less directed, more organic dimensions of growth."
+    },
+    Water:{
+      want:"In your personal development, what is asking for more room is self-compassion — the capacity to be with yourself honestly, without immediately trying to improve or correct what you find. Growth that skips this layer tends not to stick.",
+      have:"You have a strong connection to your inner emotional life. The invitation now is to let that awareness translate into how you relate to others — and to let your development serve your relationships, not just your own growth."
+    },
+    Earth:{
+      want:"In your personal development, the gap is between insight and action. You may understand yourself well — but turning that understanding into consistent, embodied change is where things get stuck. You want more follow-through.",
+      have:"You are disciplined and committed in your development — you finish what you start. The question is whether that structure leaves room for the messier, less predictable dimensions of real growth."
+    }
+  }
+};
+
+const CORE_QUESTIONS={
+  Private:{
+    Ether:"What would it mean to genuinely arrive in your own life — not just manage it?",
+    Air:"When did you last do something in your personal life that had no purpose other than enjoyment?",
+    Fire:"What do you actually want — not what would be reasonable to want, but what you truly desire?",
+    Water:"Is there a conversation you have been avoiding with someone close to you?",
+    Earth:"What one change to your daily rhythm would make everything else feel more grounded?"
+  },
+  Work:{
+    Ether:"If you stripped away everything that is expected of you at work, what would still feel worth doing?",
+    Air:"What would you try at work if you knew it was safe to fail?",
+    Fire:"What is the thing you keep almost saying in meetings — and then don't?",
+    Water:"Is there something your team needs from you that you haven't yet been willing to give?",
+    Earth:"What is one thing you keep starting but never finishing — and what would it take to close it?"
+  },
+  Development:{
+    Ether:"When is the last time you sat in genuine uncertainty without trying to resolve it?",
+    Air:"What would you explore if your development didn't have to be useful?",
+    Fire:"What kind of person do you want to become — and what are you still waiting for before you start?",
+    Water:"How honestly do you treat yourself when you don't live up to your own standards?",
+    Earth:"What insight have you had repeatedly that you still haven't acted on?"
+  }
+};
+
+function domainNarrative(d,ranked){
+  const m=ranked[0];
+  const narratives=PLAIN_NARRATIVES[d.key][m.element.key];
+  return m.diff>0 ? narratives.want : narratives.have;
+}
+
+function coreQuestion(d,item){
+  return CORE_QUESTIONS[d.key][item.element.key];
+}
+
+function nextStepText(r){
+  if(state.person.goal==="Concrete first step") return "The clearest place to start is where the gap between your current reality and what you want is largest. Not because everything else is unimportant — but because this is where a small shift creates the most movement.";
+  if(state.person.goal==="Conversation starter") return "Use this profile as a starting point for a conversation about what often goes unspoken: where you are genuinely strong, where you are holding back, and what kind of support would actually help.";
+  return "This scan is a starting point, not a final verdict. The most valuable next step is to sit with what resonates most — and resist the urge to immediately fix it.";
+}
+
+function actionItems(r){
+  const top=r.topMoves[0];
+  const domainKey=top.domain.key;
+  const elemKey=top.element.key;
+
+  const ACTIONS={
+    Private:{
+      Ether:["Block 30 minutes this week — no phone, no agenda. Just sit somewhere quiet and notice what surfaces.","Write down one thing in your private life that you keep pushing aside but that actually matters to you.","Tell someone close to you something you normally keep to yourself."],
+      Air:["Make one plan this week with no practical purpose — just something you genuinely enjoy.","Do one thing differently in your daily routine, just to see how it feels.","Spend 20 minutes outside without a destination or a podcast."],
+      Fire:["Write down one thing in your private life that you keep tolerating but that doesn't actually fit you.","Say no to one thing this week that you would normally agree to out of habit.","Name out loud — to yourself or someone you trust — what you actually want right now."],
+      Water:["Have one conversation at home with your phone in another room.","Ask someone close to you how they are — and wait long enough to actually hear the answer.","Share something you are genuinely uncertain about with someone you trust."],
+      Earth:["Identify one simple routine that would make your mornings feel more grounded — and do it every day this week.","Finish one thing you have been leaving half-done.","Clear one small space in your home or schedule that has been nagging at you."]
+    },
+    Work:{
+      Ether:["Block time in your calendar this week that has no deliverable — just thinking space.","Write down one question about your work that you keep not giving yourself time to answer.","Ask yourself: what would I still find meaningful here if nobody was watching?"],
+      Air:["Approach one familiar work situation in a completely different way than usual.","Suggest one idea this week that you would normally keep to yourself because it feels too unconventional.","Take a walk without your phone before your next important meeting or decision."],
+      Fire:["Say one thing out loud in a work context this week that you would normally soften or hold back.","Make one decision this week without waiting for consensus — and own it.","Write down the thing you most want to change at work but haven't acted on yet."],
+      Water:["Start one meeting this week by asking how people actually are — and mean it.","Have one real conversation with a colleague, without an agenda.","Name something in a team situation that everyone is thinking but nobody is saying."],
+      Earth:["Identify one project or task that has been dragging — and either finish it or formally let it go.","Create a simple weekly structure for yourself and stick to it for five days.","Before starting something new this week, make sure something old is complete."]
+    },
+    Development:{
+      Ether:["Spend 20 minutes each morning this week without any input — no phone, no news, no podcast. Just notice what is there.","Write down one belief about yourself that you have been carrying for years but never examined.","Ask yourself once a day: what do I actually think — not what I should think?"],
+      Air:["Do one thing this week purely out of curiosity, with no goal attached.","Read something completely outside your usual field or interest.","Give yourself permission to not finish something you started — and notice how that feels."],
+      Fire:["Write down what you want your development to look like in one year — not what is realistic, what you actually want.","Identify one habit or pattern you keep saying you will change — and take one concrete step toward it this week.","Tell one person what you are working on and why it matters to you."],
+      Water:["At the end of each day this week, ask yourself: what did I actually feel today? Write one sentence.","Notice when you are being harder on yourself than you would be on someone you respect — and pause.","Do one thing this week that is purely for your own wellbeing, without justifying it."],
+      Earth:["Take one insight you have had repeatedly and write down three concrete actions that would make it real.","Create a simple weekly rhythm for your development — even 20 minutes a day — and protect it.","Finish reading, listening to, or working through one thing you started but never completed."]
+    }
+  };
+
+  const actions = ACTIONS[domainKey]?.[elemKey] || [
+    "Choose one situation this week and pay deliberate attention to what is happening beneath the surface.",
+    "Write down the pattern you notice most often — and what it is protecting you from.",
+    "Take one small action toward the change you want, this week, without waiting for conditions to be perfect."
+  ];
+
+  if(r.patterns[0]) actions.push(`Bring this question into a conversation, your journal, or a coaching session: "${r.patterns[0].title}"`);
+  return actions;
+}
 
 function avg(v){return v.reduce((s,x)=>s+x,0)/v.length}function round(v){return Math.round(v*10)/10}function signed(v){return `${v>0?"+":""}${round(v)}`}
 function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
