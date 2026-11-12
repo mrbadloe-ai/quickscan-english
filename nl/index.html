@@ -1,0 +1,539 @@
+
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuickScan 5 Elementen - The White Umbrella</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{--ink:#191716;--muted:#625f5b;--orange:#eb8113;--orange-dark:#bc670f;--soft:#fff5ec;--line:#f9d9b7;--paper:#fff;--teal:#2a6b6b;--teal-light:#e8f4f4}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;line-height:1.6}
+#app{width:min(980px,calc(100% - 28px));margin:0 auto;padding:24px 0 64px}
+.topbar{display:flex;justify-content:space-between;gap:14px;margin-bottom:18px;color:var(--muted);font-size:.88rem}.brand{font-weight:900;color:var(--orange);text-transform:uppercase;letter-spacing:.03em}
+.hero{background:linear-gradient(135deg,rgba(235,129,19,.95),rgba(188,103,15,.95));border-radius:8px;color:#fff;padding:34px;box-shadow:0 14px 42px rgba(55,35,15,.14)}.hero h1{margin:0 0 10px;font-size:clamp(2rem,5vw,4rem);line-height:1;letter-spacing:0}.hero p{margin:0;max-width:730px;color:#fff;font-size:1.02rem}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}.panel{background:#fff;border:1px solid var(--line);border-radius:8px;padding:22px;box-shadow:0 4px 22px rgba(54,39,26,.06)}.panel h2,.panel h3{margin:0 0 10px;line-height:1.2}.panel p{color:var(--muted);margin:0 0 12px}.panel p:last-child{margin-bottom:0}
+label{display:block;font-weight:800;color:var(--ink);margin:14px 0 6px;font-size:.92rem}input,select{width:100%;min-height:44px;border:1px solid #e3c6aa;border-radius:6px;padding:10px 12px;background:#fff;color:var(--ink);font:inherit}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}button{border:0;border-radius:6px;min-height:44px;padding:10px 15px;font:inherit;font-weight:900;cursor:pointer}.btn{background:var(--orange);color:#fff}.btn.secondary{background:var(--soft);color:var(--ink)}
+.progress{height:10px;background:#f5ddc5;border-radius:999px;overflow:hidden;margin-top:16px}.progress span{display:block;height:100%;background:var(--orange);transition:width .2s ease}
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}.badge{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border-radius:999px;background:var(--soft);color:var(--orange-dark);font-weight:900;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.question{border-top:1px solid var(--line);padding:18px 0}.question:first-of-type{border-top:0}.question-title{font-weight:780;margin-bottom:12px}.scale{display:grid;grid-template-columns:150px repeat(5,minmax(38px,1fr));gap:7px;align-items:center;margin:7px 0}.scale-label{color:var(--muted);font-size:.86rem;font-weight:800}.score-btn{min-width:0;min-height:38px;padding:7px;background:#fff;border:1px solid #e3c6aa;color:var(--ink)}.score-btn.active{background:var(--orange);border-color:var(--orange);color:#fff}
+.error-msg{display:none;margin-top:12px;color:#8a3021;background:#fff1ec;border:1px solid #f2c9bd;border-radius:6px;padding:10px 12px;font-weight:800}
+.report-hero{background:#fff;border:1px solid var(--line);border-radius:8px;padding:26px;box-shadow:0 14px 42px rgba(55,35,15,.12)}.report-hero h1{margin:0 0 10px;font-size:clamp(1.8rem,4vw,3.2rem);line-height:1.04}.lead{color:#3f3833;font-size:1.06rem;max-width:830px}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}.kpi{border:1px solid var(--line);border-radius:8px;padding:14px;background:#fffaf5}.kpi strong{display:block;font-size:.78rem;color:var(--orange-dark);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.report-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;margin-top:14px}.domain{border-left:5px solid var(--orange)}.chart-wrap{height:265px;margin-top:10px}.callout{background:#fff5ec;border:1px solid var(--line);border-radius:8px;padding:15px;margin-top:14px}.mini-list{margin:10px 0 0;padding-left:18px;color:var(--muted)}.mini-list li{margin:6px 0}
+.score-table{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:10px}.score-table th,.score-table td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left}.score-table th{color:var(--orange-dark);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}.score-table td:nth-child(2),.score-table td:nth-child(3),.score-table td:nth-child(4){text-align:center;white-space:nowrap}
+
+/* ── Reflection block ── */
+.reflection-block{background:linear-gradient(135deg,var(--teal-light) 0%,#f0f8f8 100%);border:1.5px solid #b8d8d8;border-radius:10px;padding:28px;margin-top:20px;position:relative}
+.reflection-block::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--teal),#4aafaf);border-radius:10px 10px 0 0}
+.reflection-block h2{color:var(--teal);margin:0 0 4px;font-size:1.25rem}
+.reflection-subtitle{color:#4a7a7a;font-size:.88rem;margin:0 0 20px;font-weight:600}
+.reflection-letter{color:var(--ink);font-size:1.02rem;line-height:1.8;margin:0 0 24px}
+.reflection-letter p{margin:0 0 16px}.reflection-letter p:last-child{margin-bottom:0}
+.reflection-step{background:#fff;border-left:4px solid var(--teal);border-radius:0 6px 6px 0;padding:14px 16px;margin:20px 0 24px;font-size:.97rem;color:var(--ink)}
+.reflection-step strong{display:block;font-size:.75rem;color:var(--teal);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;font-weight:900}
+
+/* Programme card */
+.prog-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+.programme-card{background:#fff;border:2px solid var(--teal);border-radius:10px;padding:20px}
+.programme-badge{display:inline-block;background:var(--teal);color:#fff;font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:4px 10px;border-radius:4px;margin-bottom:10px}
+.programme-card h3{margin:0 0 8px;color:var(--teal);font-size:1.05rem}
+.programme-card p{color:var(--muted);margin:0 0 14px;font-size:.92rem}
+.cta-btn{display:inline-block;background:var(--teal);color:#fff;font-weight:900;font-size:.92rem;padding:11px 20px;border-radius:6px;text-decoration:none;border:0;cursor:pointer}
+.cta-btn:hover{background:#235555}
+.cta-orange{background:var(--orange)}.cta-orange:hover{background:var(--orange-dark)}
+.also-online{font-size:.75rem;background:#e8f4f4;color:var(--teal);padding:2px 8px;border-radius:4px;font-weight:700;margin-left:6px;vertical-align:middle}
+
+@media(max-width:820px){#app{width:min(100% - 20px,980px);padding-top:12px}.hero{padding:26px 22px}.grid,.report-grid,.kpi-grid,.prog-grid{grid-template-columns:1fr}.section-head{display:block}.badge{margin-top:10px}.scale{grid-template-columns:1fr repeat(5,40px)}.scale-label{grid-column:1/-1}}
+@media print{.topbar,.btn-row,.progress,.reflection-block{display:none!important}.panel,.report-hero{box-shadow:none;break-inside:avoid}.report-grid{grid-template-columns:1fr}.chart-wrap{height:230px}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+
+// ── Data ───────────────────────────────────────────────────────────────
+const ELEMENTS=[{key:"Ether",theme:"space, meaning and awareness"},{key:"Air",theme:"movement, creativity and flexibility"},{key:"Fire",theme:"energy, boundaries and willpower"},{key:"Water",theme:"connection, empathy and emotional grounding"},{key:"Earth",theme:"structure, safety and realization"}];
+const DOMAINS=[{key:"Private",label:"Privéleven",color:"#eb8113"},{key:"Work",label:"Werk",color:"#bc670f"},{key:"Development",label:"Persoonlijke ontwikkeling",color:"#7a4a24"}];
+const DATA={
+Private:{
+Ether:["Ik heb genoeg tijd en ruimte om stil te staan en mijn gedachten te ordenen.","Ik kan mijn gevoelens en verlangens delen met de mensen die dicht bij me staan.","Bij mijn familie en in mijn sociale kring voel ik me vrij om mezelf te zijn.","Zingeving, stilte of bezinning maken deel uit van mijn dagelijks leven."],
+Air:["Ik kan meebewegen met veranderingen in mijn privéleven.","Ik voel me flexibel genoeg om me aan nieuwe omstandigheden aan te passen.","Mijn sociale leven voelt levendig zonder dat ik er versnipperd of onrustig van word.","Ik ervaar voldoende lichtheid, speelsheid en nieuwe impulsen in mijn privéleven."],
+Fire:["Ik voel energie en passie in mijn leven.","Ik herken mijn emoties en kan ze goed van elkaar onderscheiden.","Ik geef mijn grenzen duidelijk aan.","Ik voel me gemotiveerd om mijn persoonlijke doelen na te streven."],
+Water:["Ik ervaar diepe verbondenheid in mijn belangrijkste relaties.","Ik kan ruimte geven aan verdriet, teleurstelling en kwetsbaarheid.","Ik kan vergeven zonder mezelf te verliezen.","Ik kan open en kwetsbaar zijn in relaties."],
+Earth:["Ik voel me veilig in mijn privéomgeving.","Mijn dagelijkse ritme geeft me structuur en rust.","Rituelen, tradities of vaste ankerpunten geven me steun.","Mensen kunnen op mij rekenen zonder dat ik mezelf verlies in verantwoordelijkheden."]
+},
+Work:{
+Ether:["Ik heb tijd en ruimte om stil te staan bij wat ik doe en waarom het ertoe doet.","Ik durf mijn visie met anderen te delen.","Ik voel me vrij om mezelf te zijn op het werk.","Mijn werk heeft voor mij een diepere betekenis."],
+Air:["Ik beweeg gemakkelijk mee met veranderingen op het werk.","Ik ervaar inspiratie en spontaniteit in mijn werk.","Mijn werkomgeving staat open voor creativiteit en vernieuwing.","Verandering wordt vooral als kans gezien en minder als bedreiging."],
+Fire:["Ik voel me gemotiveerd en energiek in mijn werk.","Ik neem graag het voortouw bij projecten en besluiten.","De doelen van mijn werk of organisatie geven mij energie.","Ik durf zichtbaar te zijn met mijn mening, mijn grenzen en mijn keuzes."],
+Water:["Mijn team kan feedback geven en ontvangen zonder veel weerstand.","Ik voel me verbonden met collega’s of teamleden.","Ik toon empathie en houd rekening met de gevoelens van anderen.","Ik ga constructief om met conflicten en problemen in de samenwerking."],
+Earth:["Ik zie hoe mijn werk het werk van anderen ondersteunt.","Ik zie concrete resultaten van mijn werk.","Ik maak dingen af voordat ik steeds weer iets nieuws begin.","Ik kan mijn werk goed plannen en structureren.","Mijn werkomgeving voelt betrouwbaar en voorspelbaar."]
+},
+Development:{
+Ether:["Ik maak geregeld ruimte voor reflectie of zelfonderzoek.","Ik voel me verbonden met iets groters dan mezelf.","Ik ben nieuwsgierig naar nieuwe inzichten en wijsheid.","Ik weet waar ik voor sta en herken mijn eigen overtuigingen."],
+Air:["Ik kan oude gewoonten doorbreken.","Ik wil blijven leren en me blijven ontwikkelen.","Ik durf verschillende richtingen te verkennen zonder dat alles meteen vast hoeft te liggen.","Ik voel vrijheid en speelsheid als ik nieuwe dingen probeer."],
+Fire:["Ik ben sterk gemotiveerd om mezelf te blijven ontwikkelen.","Ik heb helder voor ogen hoe ik wil groeien.","Ik kan dagelijkse afleidingen opzijzetten voor mijn persoonlijke groei.","Uitdagingen op mijn ontwikkelpad zie ik vooral als kansen en minder als obstakels."],
+Water:["Ik kan mijn gedachten verbinden met wat er in en om mij heen gebeurt.","Ik voel liefde en aanvaarding voor wie ik ben.","Wat ik vanbinnen voel, mag zichtbaar zijn in mijn gedrag.","Ik toon gemakkelijk compassie voor mezelf en anderen."],
+Earth:["Ik kan mijn ideeën omzetten in concrete acties.","Ik heb een ritme dat mijn ontwikkeling ondersteunt.","Ik houd vol als groei discipline vraagt.","Ik maak mijn inzichten zichtbaar in mijn keuzes, gedrag en resultaten."]
+}
+};
+const TEXT={
+Ether:{plus:"meer ruimte voor visie, betekenis en trouw aan wat voor u klopt",minus:"minder afstand en meer contact met de dagelijkse werkelijkheid",gift:"bewustzijn, richting en het vermogen om boven de drukte van de dag uit te stijgen"},
+Air:{plus:"meer beweging, lichtheid, creativiteit en een frisse blik",minus:"meer focus en rust, met minder versnippering",gift:"aanpassingsvermogen, vernieuwing en het vermogen om anders te kijken"},
+Fire:{plus:"meer moed, energie, duidelijke grenzen en daadkracht",minus:"minder druk, strijd of oververhitting",gift:"gedrevenheid, zichtbaarheid en het vermogen om volledig achter uw keuzes te staan"},
+Water:{plus:"meer verbinding, emotionele veiligheid en diepgang in relaties",minus:"duidelijkere grenzen en meer ruimte voor uzelf in contact met anderen",gift:"empathie, afstemming en het vermogen om relaties te verdiepen"},
+Earth:{plus:"meer structuur, veiligheid, ritme en concrete uitvoering",minus:"minder starheid, controle of zwaarte",gift:"betrouwbaarheid, praktische wijsheid en het vermogen om ideeën werkelijkheid te maken"}
+};
+const ROLE_FRAMES={"Executive / leader":"Als leidinggevende beïnvloedt u hoeveel ruimte anderen voelen om verantwoordelijkheid te nemen.","Entrepreneur":"Als ondernemer ziet u in dit profiel waar visie, energie en praktische houvast elkaar versterken of juist in de weg zitten.","Professional":"Als professional ziet u waar uw kracht al zichtbaar is en waar u zich misschien nog inhoudt.","HR / coach":"Vanuit HR of coaching geeft dit profiel woorden aan ontwikkelthema’s die onder gedrag en prestaties liggen.","Academic / researcher":"In een academische of onderzoekscontext verbindt dit profiel de leiderschapspraktijk met innerlijke ontwikkeling en zingeving.","Other":"Dit profiel bekijkt leiderschap in brede zin: hoe u richting geeft aan uzelf, uw relaties en uw werk."};
+
+// ── Programmes ─────────────────────────────────────────────────────────
+const PROGRAMMES={
+keynote:{name:"Keynote",tagline:"Een introductie tot innerlijk leiderschap, spirituele intelligentie en de toekomst van leiderschap in het AI-tijdperk.",description:"Een eerste kennismaking met de kern van dit werk in één sessie, op locatie of online.",online:true,url:"https://www.thewhiteumbrella.nl/contact"},
+workshop:{name:"Workshop",tagline:"Een begeleide workshop waarin leiders de werking van hun geest en hun patronen onderzoeken en oefenen met bewust kiezen.",description:"Tijdens een halve of hele dag bespreekt en onderzoekt u uw profiel. U werkt direct met wat er bij u speelt.",online:false,url:"https://www.thewhiteumbrella.nl/contact"},
+executive:{name:"Executive Development",tagline:"Een ontwikkeltraject voor leiders en organisaties die werken aan bewustzijn, veerkracht, zingeving en impact.",description:"Een traject van meerdere maanden voor leiders die met alle lagen van dit profiel de diepte in willen, met blijvend effect.",online:true,url:"https://www.thewhiteumbrella.nl/contact"}
+};
+
+// ── Reflection library ─────────────────────────────────────────────────
+// 15 archetypes keyed by dominant element + secondary signal
+// Each has: letter (3 paragraphs), step (concrete first action this week), programme key
+const REFLECTIONS = {
+
+// ── ETHER dominant ─────────────────────────────────────────────────
+"Ether-Work": {
+  p1: "U beheerst uw vak, levert wat nodig is en kent uw werkterrein. Toch mist u iets. Wat u doet sluit minder aan bij waarom u ooit begon of bij wat leiderschap voor u zou kunnen betekenen. Ether wijst op die afstand tussen uw werk en de betekenis ervan.",
+  p2: "Een volle agenda kan verhinderen dat er iets nieuws ontstaat. Betekenis vraagt om ruimte. Welke omstandigheden helpen u te horen wat voor u werkelijk klopt in dit werk?",
+  step: "Reserveer deze week 45 minuten in uw agenda als afspraak met uzelf. Leg uw scherm weg. Ga naar buiten of zoek een stille plek. Stel uzelf één vraag: wat zou ik hier doen als ik niet bang was voor wat anderen ervan vinden? Schrijf op wat bovenkomt, zonder het te redigeren.",
+  programme: "workshop"
+},
+"Ether-Development": {
+  p1: "U wilt oprecht groeien. Toch laat uw profiel weinig ruimte voor die groei zien. Uw gewenste score is hoog en uw huidige score laag. Misschien geeft u uzelf nog onvoldoende toestemming voor innerlijke ontwikkeling, of voelt die nog niet dringend genoeg.",
+  p2: "Dit komt terug in alle domeinen. Het gaat om een innerlijke laag die door uw hele leven heen loopt. Ether staat voor ruimte en bewustzijn. Als die ruimte ontbreekt, kan zelfs een ambitieus ontwikkeltraject bij vaardigheden blijven steken, terwijl u ook wilt groeien in wie u wordt.",
+  step: "Kies deze week één ochtend waarop u twintig minuten eerder begint. Gebruik die tijd zonder iets te hoeven doen. Zit, adem en merk op wat er is. Merk het ook op als dat ongemakkelijk voelt.",
+  programme: "executive"
+},
+"Ether-Private": {
+  p1: "In uw privéleven bent u er, vervult u uw rol en zorgt u voor wat nodig is. Toch voelt het soms alsof een stiller en dieper deel van uzelf weinig ruimte krijgt om aanwezig te zijn.",
+  p2: "Ether staat voor de innerlijke stilte die echt contact mogelijk maakt. Wanneer die ruimte klein is, kunt u zich zelfs in een vol huis eenzaam voelen. Het kan helpen te merken hoe aanwezig u bent in de momenten die u met anderen deelt.",
+  step: "Voer thuis één gesprek van dertig minuten met uw telefoon in een andere kamer en zonder volgende afspraak. Geef het gesprek geen doel. Merk op wat er gebeurt als u er met uw volle aandacht bij bent.",
+  programme: "workshop"
+},
+
+// ── AIR dominant ────────────────────────────────────────────────────
+"Air-Work": {
+  p1: "Uw werk is zo voorspelbaar geworden dat het u langzaam energie kost. Waar eerst ruimte was voor nieuwsgierigheid en creatieve energie, overheersen nu routine en efficiëntie. Lucht staat voor beweging, vernieuwing en een frisse blik. Op uw werk krijgt dat weinig ruimte.",
+  p2: "U bent goed geworden in uitvoeren, leveren en betrouwbaar zijn. Spontaniteit heeft daarbij plaatsgemaakt voor stabiliteit. Op den duur kan een gebrek aan creatieve prikkels merkbaar worden als vermoeidheid, enig cynisme of het gevoel dat u op de automatische piloot werkt.",
+  step: "Pak deze week één bekende werksituatie anders aan. Laat iemand anders het overleg leiden, teken een probleem uit dat u normaal analyseert of betrek iemand die u gewoonlijk niet zou vragen bij een besluit. Merk op wat dat met de energie doet.",
+  programme: "workshop"
+},
+"Air-Development": {
+  p1: "U wilt zich ontwikkelen en kiest vaak wat logisch is, wat van u verwacht wordt en wat aansluit bij uw rol. Het speelse verkennen en proberen zonder te weten waar het toe leidt, heeft minder ruimte gekregen.",
+  p2: "Lucht geeft u de vrijheid om uw nieuwsgierigheid te volgen voordat u weet wat het oplevert. Uw profiel laat zien dat u daarnaar verlangt, terwijl uw ontwikkeling nu sterk gepland is. Betekenisvolle groei kan juist uit een onverwachte richting komen.",
+  step: "Doe deze week één ding uit nieuwsgierigheid. Lees het eerste hoofdstuk van een boek buiten uw vak, ga ergens heen waar u normaal niet komt of kies een onbekende route. Houd het klein en geef het geen doel.",
+  programme: "keynote"
+},
+"Air-Private": {
+  p1: "Uw privéleven is ongemerkt vol geraakt met verantwoordelijkheden, structuur en dingen die moeten gebeuren. Lichtheid en spontane momenten die nergens toe hoeven te dienen, zijn schaars geworden.",
+  p2: "Lucht in het privéleven gaat over de ruimte om op adem te komen, verrast te worden en zomaar te lachen. Als die ruimte klein wordt, loopt alles misschien zoals het hoort en voelt uw dagelijks leven toch minder levendig.",
+  step: "Plan deze week iets met iemand van wie u houdt dat geen praktisch doel heeft. Wandel zonder bestemming, speel een spel of laat een gesprek alle kanten op gaan. Zet het in uw agenda voordat de tijd wordt ingevuld.",
+  programme: "keynote"
+},
+
+// ── FIRE dominant ───────────────────────────────────────────────────
+"Fire-Work": {
+  p1: "U heeft gedrevenheid en weet waar u naartoe wilt. Toch klinkt uw visie nog niet volledig door in uw besluiten en in hoe u aanwezig bent op het werk. Vuur staat voor richting, moed en zichtbaarheid. Uw profiel laat zien dat u daar meer ruimte aan wilt geven.",
+  p2: "Misschien wacht u tot de organisatie er klaar voor is, de timing beter is of anderen overtuigd zijn. Die omstandigheden kunnen meetellen. Welke positie bent u bereid zichtbaar in te nemen, ook als het moment nog niet ideaal is?",
+  step: "Zeg deze week op het werk één ding dat u normaal zou afzwakken of voor uzelf zou houden. Kies een overleg, gesprek of e-mail. Wees eerlijk en merk op wat er gebeurt als u minder bezig bent met hoe het overkomt.",
+  programme: "workshop"
+},
+"Fire-Work-HighFire": {
+  p1: "Uw Vuur is al sterk op het werk. U bent zichtbaar, geeft leiding en boekt resultaten. Dat heeft ook een prijs. Uw gewenste score ligt onder uw huidige score. Dat komt weinig voor en kan erop wijzen dat u de huidige intensiteit moeilijk volhoudt.",
+  p2: "Veel Vuur met weinig Water kan wrijving geven in uw team, relaties en uiteindelijk in uzelf. Uw ambitie is waardevol. Draagt de manier waarop u haar nu inzet bij aan de impact die u wilt hebben? Hoeveel ruimte blijft er om u heen over?",
+  step: "Pauzeer deze week één keer als u geneigd bent door te drukken, te corrigeren of het over te nemen. Stel een vraag en wacht op het antwoord. Laat de stilte even bestaan en merk op wat er daardoor mogelijk wordt.",
+  programme: "executive"
+},
+"Fire-Private": {
+  p1: "Uw Vuur-score in het privédomein laat een verschil zien tussen hoe u nu leeft en hoe u wilt leven. Misschien wilt u uw verlangens, grenzen en voorkeuren meer laten meetellen in het dagelijks leven.",
+  p2: "Op uw werk kunt u helder en besluitvaardig zijn. Het kan lastiger zijn diezelfde helderheid mee te nemen naar relaties, uw tijdsbesteding en wat u wel of niet aanneemt. Vuur in het privéleven gaat over uzelf genoeg gezag geven om uw eigen keuzes te maken.",
+  step: "Schrijf deze week één situatie, gewoonte of dynamiek in uw privéleven op die u blijft verdragen terwijl die eigenlijk niet bij u past. Benoem het helder. U hoeft er nog geen besluit over te nemen.",
+  programme: "workshop"
+},
+
+// ── WATER dominant ──────────────────────────────────────────────────
+"Water-Work": {
+  p1: "U kunt samenwerken, communiceren en relaties onderhouden. Toch voelt de echte verbinding op het werk dun. Misschien mist u de diepere afstemming en het gevoel dat u en uw collega’s werkelijk bij elkaar aanwezig zijn.",
+  p2: "Water op het werk gaat over ruimte voor wat mensen in een project, team of lastige situatie voelen. Wordt dat benoemd en meegenomen? Uw profiel wijst op een verlangen daarnaar, terwijl het in uw omgeving misschien veiliger voelt om bij de feiten te blijven.",
+  step: "Begin deze week één overleg of gesprek met een vraag die buiten de agenda valt. Vraag hoe het werkelijk met de mensen gaat en geef het vijf minuten. U hoeft het gesprek alleen te openen.",
+  programme: "workshop"
+},
+"Water-Private": {
+  p1: "Uw privéprofiel laat een verlangen naar diepere verbinding zien. De dingen lopen en mensen zorgen voor elkaar. Toch mist u misschien kwetsbaarheid, diepgang of het gevoel dat iemand u werkelijk kent.",
+  p2: "Water in het privéleven gaat over aanwezig kunnen zijn bij wat u en de mensen dichtbij u voelen. Kan verdriet er zijn? Is er ruimte voor nabijheid en voor een eerlijk verschil van mening? Uw profiel wijst erop dat die ruimte nog kan groeien.",
+  step: "Deel deze week met iemand dichtbij u iets wat u doorgaans voor uzelf houdt. Iets wat u voelt, mist of waarover u onzeker bent. Houd het eenvoudig en laat het even bij wat u heeft gezegd.",
+  programme: "workshop"
+},
+"Water-Development": {
+  p1: "Uw ontwikkelprofiel wijst naar uw innerlijke gevoelswereld, een laag die bij leiderschapsontwikkeling makkelijk buiten beeld raakt. Het gaat om uzelf leren aanvaarden zoals u bent.",
+  p2: "Water in persoonlijke ontwikkeling vraagt dat u luistert naar wat u voelt, zonder direct een oordeel te vellen. Uw scores wijzen op een verlangen naar meer zelfcompassie en eerlijk contact met uzelf. Nu gaat uw aandacht misschien vaker naar wat er beter moet.",
+  step: "Vraag uzelf aan het einde van de dag, voordat u uw telefoon pakt of de tv aanzet, wat u vandaag werkelijk heeft gevoeld. Schrijf één zin over uw gevoel. Doe dat vijf dagen.",
+  programme: "executive"
+},
+
+// ── EARTH dominant ──────────────────────────────────────────────────
+"Earth-Work": {
+  p1: "U weet hoe u plannen omzet in structuur en resultaten. Die kracht van Aarde is zichtbaar. Onder de resultaten speelt iets anders. De structuur die u eerder houvast gaf, kan zwaar gaan voelen.",
+  p2: "Als Aarde overheerst en Ether en Lucht weinig ruimte krijgen, kan het werk effectief blijven en tegelijk steeds verder af komen te staan van betekenis, visie en creativiteit. De structuur staat. Uw profiel laat zien dat u daarbinnen meer ruimte zoekt.",
+  step: "Neem deze week bij één besluit eerst tien minuten om bij de vraag stil te staan. Laat uw notities en zoekmachine dicht. Vraag uzelf wat u aanvoelt. Bekijk daarna de gegevens en merk op of er iets is verschoven.",
+  programme: "workshop"
+},
+"Earth-Development": {
+  p1: "U bent gedisciplineerd in uw ontwikkeling. U houdt u aan afspraken, maakt af wat u begint en waardeert structuur. Aarde is hier een kracht. Brengt die discipline u ook waar u werkelijk naartoe wilt?",
+  p2: "Uw profiel vraagt ruimte voor de beweeglijkere kanten van ontwikkeling, zoals Ether en Lucht. U mag iets nog niet weten, verkennen en het laten ontstaan voordat u er een plan van maakt. Binnen vertrouwde structuren komt groei soms terug bij het vertrekpunt.",
+  step: "Plan deze week iets waarvan u de uitkomst niet kunt vastleggen. Spreek iemand wiens blik u echt uitdaagt of probeer een vaardigheid of oefening die u nog niet kent.",
+  programme: "executive"
+},
+
+// ── BALANCED / MULTI-DOMAIN ─────────────────────────────────────────
+"Multi-High": {
+  p1: "In alle drie de domeinen en bij meerdere elementen ziet u verschil tussen waar u staat en waar u wilt zijn. De breedte van die beweging wijst erop dat u klaar bent voor een volgende fase.",
+  p2: "U kunt die verschillen gaan zien als een lijst om één voor één af te werken. Blijvende verandering vraagt hier om een duurzame verschuiving in hoe u leidinggeeft, te beginnen bij hoe u uzelf leidt.",
+  step: "Begin deze week met de vraag onder alle verschillen: wat voor leider wil ik worden? Schrijf een halve pagina over wie u wilt zijn. Hoe zou het voelen om die persoon te zijn op een gewone dinsdag?",
+  programme: "executive"
+},
+"Balanced-Low-Gap": {
+  p1: "Uw profiel laat op de meeste elementen en domeinen een betrekkelijk gelijkmatig beeld zien. De verschillen tussen hoe het nu is en hoe u wilt dat het is, zijn klein. Dat geeft ruimte om preciezer te kijken.",
+  p2: "Uw groei ligt in het verfijnen van wat al werkt. Onderzoek of de grens die u nu ervaart werkelijk de grens van uw mogelijkheden is, of vooral aangeeft wat u uzelf tot nu toe heeft toegestaan.",
+  step: "Kies deze week één verschil dat voor u persoonlijk telt, ook los van de score. Wat is er nodig om het met één punt te verkleinen? Zet één stap in die richting.",
+  programme: "keynote"
+}
+
+}; // end REFLECTIONS
+
+// ── Profile matching logic ─────────────────────────────────────────────
+function selectReflection(r) {
+  const cells = r.cells;
+  const top = r.topMoves[0];
+  const avgGap = cells.reduce((s,c)=>s+c.abs,0)/cells.length;
+
+  // Check for balanced profile
+  if (avgGap < 0.6) return "Balanced-Low-Gap";
+
+  // Check for multi-domain high gap
+  const domainsWithGap = DOMAINS.filter(d =>
+    ELEMENTS.some(e => r.scores[d.key][e.key].abs >= 1.2)
+  ).length;
+  if (domainsWithGap >= 3 && avgGap >= 1.2) return "Multi-High";
+
+  // Special: high Fire at work
+  if (top.element.key === "Fire" && top.domain.key === "Work" && top.now >= 4 && top.diff < 0) {
+    return "Fire-Work-HighFire";
+  }
+
+  // Default: element + domain key
+  const key = `${top.element.key}-${top.domain.key}`;
+  if (REFLECTIONS[key]) return key;
+
+  // Fallback: element only
+  const elementKeys = Object.keys(REFLECTIONS).filter(k => k.startsWith(top.element.key));
+  if (elementKeys.length) return elementKeys[0];
+
+  return "Multi-High";
+}
+
+function selectProgramme(r, reflectionKey) {
+  const refl = REFLECTIONS[reflectionKey];
+  if (refl && refl.programme) return refl.programme;
+  const avgGap = r.cells.reduce((s,c)=>s+c.abs,0)/r.cells.length;
+  if (avgGap >= 1.2) return "executive";
+  if (avgGap >= 0.8) return "workshop";
+  return "keynote";
+}
+
+// ── App state ──────────────────────────────────────────────────────────
+let state={screen:"intro",step:0,person:{name:"",email:"",role:"Professional",focus:"Personal growth",goal:"Direction and priorities"},answers:{}};
+const sections=DOMAINS.flatMap(domain=>ELEMENTS.map(element=>({domain,element})));
+const app=document.getElementById("app");let charts=[];
+
+function ensureAnswers(){DOMAINS.forEach(d=>{state.answers[d.key]||={};ELEMENTS.forEach(e=>{state.answers[d.key][e.key]||=DATA[d.key][e.key].map(()=>({now:0,desired:0}));});});}
+function render(){charts.forEach(c=>c.destroy());charts=[];ensureAnswers();if(state.screen==="intro")renderIntro();if(state.screen==="questions")renderQuestions();if(state.screen==="report")renderReport();}
+
+function renderIntro(){app.innerHTML=`<div class="topbar"><span class="brand">The White Umbrella</span><span>QuickScan 5 Elementen</span></div><section class="hero"><h1>Wat vraagt nu uw aandacht?</h1><p>Deze QuickScan laat zien waar uw kracht ligt, waar u spanning ervaart en waar ruimte is voor groei in uw privéleven, uw werk en uw persoonlijke ontwikkeling.</p></section><section class="grid"><div class="panel"><h2>Voordat u begint</h2><p>U beoordeelt elke stelling twee keer. Eerst geeft u aan hoe het nu is, daarna hoe u het graag zou willen. Uw profiel laat scores, patronen, verschillen en kansen voor groei zien.</p><label for="name">Naam *</label><input id="name" value="${escapeHtml(state.person.name)}" placeholder="bijv. Archana"><label for="email">E-mailadres *</label><input id="email" type="email" value="${escapeHtml(state.person.email)}" placeholder="u@voorbeeld.nl"></div><div class="panel"><h2>Context</h2><p>Met deze vragen stemmen we uw profiel af op uw situatie.</p><label for="role">Welke rol past het beste bij u?</label><select id="role">${optionList(["Executive / leader","Entrepreneur","Professional","HR / coach","Academic / researcher","Other"],state.person.role)}</select><label for="focus">Wat vraagt op dit moment uw aandacht?</label><select id="focus">${optionList(["Work pressure or balance","Leadership","Team or collaboration","Meaning and purpose","Personal growth","Choosing direction"],state.person.focus)}</select><label for="goal">Wat wilt u uit deze scan halen?</label><select id="goal">${optionList(["Insight","Direction and priorities","Concrete first step","Conversation starter","Coaching reflection"],state.person.goal)}</select><div class="btn-row"><button class="btn" onclick="startScan()">Start de scan</button></div></div></section>`;}
+
+function startScan(){const name=document.getElementById("name").value.trim(),email=document.getElementById("email").value.trim();if(!name)return alert("Vul uw naam in.");if(!email||!email.includes("@"))return alert("Vul een geldig e-mailadres in.");state.person={name,email,role:document.getElementById("role").value,focus:document.getElementById("focus").value,goal:document.getElementById("goal").value};state.screen="questions";state.step=0;render();scrollTo(0,0);}
+
+function renderQuestions(){const current=sections[state.step],qs=DATA[current.domain.key][current.element.key],answers=state.answers[current.domain.key][current.element.key],pct=Math.round((state.step/sections.length)*100);app.innerHTML=`<div class="topbar"><span class="brand">The White Umbrella</span><span>${state.step+1} van ${sections.length}</span></div><section class="panel"><div class="section-head"><div><h2>${current.domain.label} · ${LABELS_NL[current.element.key]}</h2><p>${TEXT[current.element.key].gift}. Antwoord vanuit hoe u het werkelijk ervaart.</p></div><span class="badge">${Math.max(1,pct)}% voltooid</span></div><div class="progress"><span style="width:${pct}%"></span></div>${qs.map((q,i)=>questionHtml(q,i,answers[i])).join("")}<div id="error" class="error-msg">Vul voor elke stelling beide scores in voordat u verdergaat.</div><div class="btn-row">${state.step>0?`<button class="btn secondary" onclick="prevStep()">Terug</button>`:""}<button class="btn" onclick="nextStep()">${state.step===sections.length-1?"Maak mijn profiel":"Volgende"}</button></div></section>`;}
+
+function questionHtml(q,i,a){return `<div class="question"><div class="question-title">${i+1}. ${q}</div>${scaleHtml(i,"now","Zoals het nu is",a.now)}${scaleHtml(i,"desired","Zoals ik het graag wil",a.desired)}</div>`}
+function scaleHtml(i,type,label,value){return `<div class="scale"><span class="scale-label">${label}</span>${[1,2,3,4,5].map(s=>`<button class="score-btn ${value===s?"active":""}" onclick="setScore(${i},'${type}',${s})" aria-label="${label}: ${s}">${s}</button>`).join("")}</div>`}
+function setScore(i,type,score){const c=sections[state.step];state.answers[c.domain.key][c.element.key][i][type]=score;renderQuestions();}
+function nextStep(){const c=sections[state.step],answers=state.answers[c.domain.key][c.element.key];if(answers.some(a=>!a.now||!a.desired)){document.getElementById("error").style.display="block";return}if(state.step<sections.length-1){state.step++;render();scrollTo(0,0)}else{state.screen="report";render();scrollTo(0,0)}}
+function prevStep(){state.step--;render();scrollTo(0,0)}
+
+function calcReport(){const scores={},cells=[],signals=[];DOMAINS.forEach(d=>{scores[d.key]={};ELEMENTS.forEach(e=>{const answers=state.answers[d.key][e.key],now=round(avg(answers.map(a=>a.now))),desired=round(avg(answers.map(a=>a.desired))),diff=round(desired-now),abs=Math.abs(diff);scores[d.key][e.key]={now,desired,diff,abs};cells.push({domain:d,element:e,now,desired,diff,abs});answers.forEach((a,i)=>signals.push({domain:d,element:e,question:DATA[d.key][e.key][i],now:a.now,desired:a.desired,diff:a.desired-a.now,abs:Math.abs(a.desired-a.now)}));});});const topMoves=cells.slice().sort((a,b)=>b.abs-a.abs||b.desired-a.desired).slice(0,5),strengths=cells.filter(c=>c.now>=4&&c.abs<=.75).sort((a,b)=>b.now-a.now).slice(0,4),undercurrents=signals.filter(s=>s.abs>=3).sort((a,b)=>b.abs-a.abs).slice(0,4),patterns=detectPatterns(scores,topMoves,strengths);return{scores,cells,topMoves,strengths,undercurrents,patterns};}
+
+function detectPatterns(scores,topMoves,strengths){const p=[],get=(d,e)=>scores[d][e],domainGap=d=>ELEMENTS.reduce((sum,e)=>sum+Math.max(0,get(d,e.key).diff),0);if(domainGap("Development")>=3.5)p.push({title:"U geeft uzelf minder ruimte om te groeien dan u zou willen",text:"Uw ontwikkelprofiel laat zien dat u zich op meerdere gebieden inhoudt. Er is potentieel. Hoeveel ruimte geeft u uzelf om het te benutten?"});if(get("Private","Air").diff<=-.75&&get("Work","Air").diff>=.75)p.push({title:"Het verschil rond Lucht valt op",text:"Privé voelt Lucht misschien als te veel beweging of prikkels. Op uw werk verlangt u juist naar vrijheid, creativiteit en een frisse blik. Waar geeft u uw levendigheid de ruimte en waar houdt u zich in?"});if(get("Work","Fire").now>=4&&get("Work","Water").diff>=.75)p.push({title:"Veel gedrevenheid en behoefte aan meer verbinding",text:"Uw werkprofiel toont gedrevenheid en Water vraagt om meer ruimte. Leiderschap wordt duurzamer als tempo, empathie en emotionele veiligheid samengaan."});if(get("Private","Fire").diff>=.75&&get("Private","Water").now>=4)p.push({title:"Harmonie kan uw Vuur temperen",text:"Verbinding lijkt aanwezig, terwijl Vuur meer ruimte vraagt. Onderzoek of harmonie soms ten koste gaat van uw verlangen, ambitie of grenzen."});if(strengths.length>=3&&topMoves[0]?.abs>=1)p.push({title:"Stabiliteit aan de oppervlakte, beweging daaronder",text:"Meerdere kwaliteiten zijn al sterk. Het grootste verschil kan laten zien waar uw leiderschap zich verder kan ontwikkelen."});if(!p.length)p.push({title:"Uw profiel vraagt om verfijning",text:"De verschillen zijn klein en de nuances tellen. Uw groei ligt waarschijnlijk in preciezer kiezen en eerder luisteren."});return p.slice(0,4)}
+
+function renderReport(){
+  const r=calcReport();
+  const reflKey=selectReflection(r);
+  const refl=REFLECTIONS[reflKey];
+  const progKey=selectProgramme(r,reflKey);
+  const prog=PROGRAMMES[progKey];
+  const name=escapeHtml(state.person.name);
+  const top=r.topMoves[0];
+  const roleText=ROLE_FRAMES[state.person.role]||ROLE_FRAMES.Other;
+  const intro=`${name}, uw profiel laat zien waar u staat en waar ruimte is voor ontwikkeling. ${roleText} Het sterkste signaal is ${LABELS_NL[top.element.key]} bij ${top.domain.label}: ${top.diff>0?TEXT[top.element.key].plus:TEXT[top.element.key].minus}.`;
+
+  const onlineTag=prog.online?`<span class="also-online">Ook online</span>`:"";
+
+  app.innerHTML=`
+  <div class="topbar"><span class="brand">The White Umbrella</span><span>Persoonlijk leiderschapsprofiel</span></div>
+
+  <section class="report-hero">
+    <h1>Persoonlijk leiderschapsprofiel ${name}</h1>
+    <p class="lead">${intro}</p>
+    <div class="kpi-grid">
+      <div class="kpi"><strong>Focus</strong>${escapeHtml(LABELS_NL[state.person.focus])}</div>
+      <div class="kpi"><strong>Doel</strong>${escapeHtml(LABELS_NL[state.person.goal])}</div>
+      <div class="kpi"><strong>Grootste verschil</strong>${LABELS_NL[top.element.key]} · ${top.domain.label}</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="window.print()">Rapport downloaden of afdrukken</button>
+      <button class="btn secondary" onclick="state.screen='intro';render();scrollTo(0,0)">Nieuwe scan</button>
+    </div>
+  </section>
+
+  <div class="reflection-block">
+    <h2>Uw persoonlijke reflectie · ${name}</h2>
+    <p class="reflection-subtitle">Afgestemd op uw profiel</p>
+    <div class="reflection-letter">
+      <p>${refl.p1}</p>
+      <p>${refl.p2}</p>
+    </div>
+    <div class="reflection-step">
+      <strong>Uw eerste stap voor deze week</strong>
+      ${refl.step}
+    </div>
+    <div class="prog-grid">
+      <div class="programme-card">
+        <span class="programme-badge">Mogelijke vervolgstap</span>
+        <h3>${prog.name} ${onlineTag}</h3>
+        <p><em>${prog.tagline}</em></p>
+        <p>${prog.description}</p>
+        <a class="cta-btn" href="${prog.url}" target="_blank">Lees meer en neem contact op</a>
+      </div>
+      <div class="panel" style="background:#fffaf5">
+        <h3 style="color:var(--orange-dark)">Wilt u eerst overleggen?</h3>
+        <p>We beginnen met een vrijblijvend gesprek over waar u staat en wat u verder zou helpen.</p>
+        <p><strong>Alle programma’s zijn ook beschikbaar voor organisaties en teams.</strong></p>
+        <a class="cta-btn cta-orange" href="https://www.thewhiteumbrella.nl/contact" target="_blank">Plan een kennismaking</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="report-grid">
+    <div>
+      <div class="panel"><h2>Onder de oppervlakte</h2>${r.patterns.map(p=>`<div class="callout"><h3>${p.title}</h3><p>${p.text}</p></div>`).join("")}</div>
+      ${DOMAINS.map(d=>domainReportHtml(d,r)).join("")}
+      <div class="panel"><h2>Uw volgende stap</h2><p>${nextStepText(r)}</p><ul class="mini-list">${actionItems(r).map(i=>`<li>${i}</li>`).join("")}</ul></div>
+    </div>
+    <aside>
+      <div class="panel"><h3>Belangrijkste signalen</h3><table class="score-table"><thead><tr><th>Thema</th><th>Nu</th><th>Gewenst</th><th>Verschil</th></tr></thead><tbody>${r.topMoves.map(c=>`<tr><td>${c.domain.label}<br><strong>${LABELS_NL[c.element.key]}</strong></td><td>${c.now}</td><td>${c.desired}</td><td>${signed(c.diff)}</td></tr>`).join("")}</tbody></table></div>
+      <div class="panel"><h3>Opvallende verschillen</h3>${r.undercurrents.length?`<ul class="mini-list">${r.undercurrents.map(s=>`<li><strong>${s.domain.label} - ${LABELS_NL[s.element.key]}:</strong> ${s.question}</li>`).join("")}</ul>`:`<p>Bij afzonderlijke vragen zijn er geen grote uitschieters. De nuance zit vooral in het totale patroon.</p>`}</div>
+    </aside>
+  </section>`;
+
+  setTimeout(()=>DOMAINS.forEach(d=>{const cv=document.getElementById(`chart-${d.key}`);if(!cv)return;charts.push(new Chart(cv,{type:"radar",data:{labels:ELEMENTS.map(e=>LABELS_NL[e.key]),datasets:[{label:"Nu",data:ELEMENTS.map(e=>r.scores[d.key][e.key].now),borderColor:d.color,backgroundColor:`${d.color}22`,pointBackgroundColor:d.color,borderWidth:2},{label:"Gewenst",data:ELEMENTS.map(e=>r.scores[d.key][e.key].desired),borderColor:`${d.color}99`,backgroundColor:`${d.color}10`,pointBackgroundColor:`${d.color}99`,borderDash:[5,4],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:5,ticks:{stepSize:1,display:false},pointLabels:{color:"#4b433e",font:{weight:"700"}}}},plugins:{legend:{position:"bottom"}}}}));}),60);
+}
+
+function domainReportHtml(d,r){const ranked=ELEMENTS.map(e=>({element:e,...r.scores[d.key][e.key]})).sort((a,b)=>b.abs-a.abs),main=ranked[0],balanced=ranked.filter(i=>i.abs<.5);const balancedNote=balanced.length?`<p><strong>Wat hier al in balans voelt:</strong> ${balanced.map(i=>PLAIN_LABELS[i.element.key]).join(", ")} — op deze punten liggen uw huidige en gewenste scores dicht bij elkaar.</p>`:"";return `<section class="panel domain"><h3>${d.label}</h3><p>${domainNarrative(d,ranked)}</p><div class="chart-wrap"><canvas id="chart-${d.key}"></canvas></div><div class="callout"><h3>Een vraag om bij stil te staan</h3><p>${coreQuestion(d,main)}</p></div>${balancedNote}</section>`}
+
+const PLAIN_LABELS={
+  Ether:"innerlijke stilte en zingeving",
+  Air:"creativiteit en aanpassingsvermogen",
+  Fire:"richting en daadkracht",
+  Water:"verbinding en emotionele diepgang",
+  Earth:"structuur en afmaken wat u begint"
+};
+
+const PLAIN_NARRATIVES={
+  Private:{
+    Ether:{
+      want:"In uw privéleven verlangt u naar meer innerlijke rust. U zoekt tijd en ruimte om midden in de dagelijkse drukte stil te staan bij wat u echt belangrijk vindt en wat uw leven betekenis geeft.",
+      have:"In uw privéleven is er ruimte voor reflectie en bewustzijn. Hoe wordt die aandacht vanbinnen zichtbaar in uw relaties en dagelijkse gewoonten?"
+    },
+    Air:{
+      want:"In uw privéleven wilt u meer lucht. U mist spontaniteit, lichtheid en momenten die nergens toe hoeven te dienen.",
+      have:"Uw privéleven kent veel beweging en verandering. Misschien zoekt u daarin een rustpunt en iets wat u houvast geeft."
+    },
+    Fire:{
+      want:"U wilt zich levendiger voelen in uw privéleven, met meer energie, passie en helderheid over wat u wilt. Misschien mag u uzelf meer ruimte geven om er ook naar te handelen.",
+      have:"U brengt veel energie en intensiteit mee in uw privéleven. Is die inzet vol te houden? Merk op wanneer ze ruimte opent en wanneer ze die kleiner maakt."
+    },
+    Water:{
+      want:"U verlangt naar diepere verbinding in uw privéleven. Naar nabijheid waarin u zich werkelijk gekend voelt en waarin u zich zonder voorbehoud kunt laten zien.",
+      have:"Verbinding is al een kracht in uw privéleven. De vraag gaat over grenzen. Hoe zorgt u voor anderen en houdt u tegelijk helder wat u zelf nodig heeft?"
+    },
+    Earth:{
+      want:"U wilt meer stabiliteit in uw privéleven, met routines en een ritme die u houvast geven en uw dagelijkse leven ondersteunen.",
+      have:"Uw privéleven rust op een stevige basis. Laat die structuur nog genoeg ruimte voor spontane momenten, verrassing en vernieuwing?"
+    }
+  },
+  Work:{
+    Ether:{
+      want:"Op uw werk mist u tijd om werkelijk na te denken. U zoekt ruimte om stil te staan bij het waarom van uw werk en bij wat er voor u toe doet.",
+      have:"U brengt reflectie en richting in uw werk. Hoe vertaalt u die innerlijke helderheid naar zichtbaar handelen en naar uw contact met anderen?"
+    },
+    Air:{
+      want:"Op uw werk zoekt u meer speelruimte. De routine voelt voorspelbaar en er is weinig ruimte voor frisse ideeën en creatieve energie. U wilt meer prikkels en mogelijkheden.",
+      have:"Er is veel creativiteit en flexibiliteit in uw werk. Ideeën krijgen meer invloed als u ze ook uitwerkt en afmaakt."
+    },
+    Fire:{
+      want:"Op het werk wilt u zichtbaarder en daadkrachtiger zijn. U wilt uw mening uitspreken, uw positie innemen en vanuit uw overtuiging leiden, ook als anderen iets anders verwachten.",
+      have:"U brengt veel gedrevenheid en richting in uw werk. Geeft die gedrevenheid anderen ruimte voor hun eigen tempo, inbreng en verantwoordelijkheid?"
+    },
+    Water:{
+      want:"Op het werk mist u echt menselijk contact. U wilt dat mensen elkaar zien, lastige zaken kunnen benoemen en evenveel aandacht aan de samenwerking geven als aan de resultaten.",
+      have:"U brengt al warmte en aandacht in uw werkrelaties. Onderzoek hoe u die kunt verbinden met heldere grenzen. Wanneer zoekt u contact en wanneer houdt u uw eigen positie vast?"
+    },
+    Earth:{
+      want:"Op het werk wilt u helderder structuur en meer afronding. U wilt zien dat wat u begint ook afkomt en effect heeft. De afstand tussen ideeën en resultaten voelt groot.",
+      have:"U bent betrouwbaar en werkt gestructureerd. Er komt werk af. Houdt u ook ruimte voor het grotere geheel, voor betekenis, richting en vernieuwing?"
+    }
+  },
+  Development:{
+    Ether:{
+      want:"In uw persoonlijke ontwikkeling verlangt u naar innerlijke ruimte. U wilt tijd om stil te staan en iets diepers te laten ontstaan. Die werkelijke stilte ontbreekt nu grotendeels.",
+      have:"U heeft een sterk reflectief innerlijk leven. Hoe kunt u dat bewustzijn laten doorwerken in uw keuzes en in zichtbare verandering?"
+    },
+    Air:{
+      want:"In uw persoonlijke ontwikkeling wilt u vrijer kunnen verkennen en proberen, ook als u vooraf de uitkomst niet kent. Er ligt misschien al veel vast.",
+      have:"U bent nieuwsgierig en probeert graag iets nieuws. Wat gebeurt er als u één spoor lang genoeg volgt om het werkelijk uit te diepen?"
+    },
+    Fire:{
+      want:"Uw persoonlijke ontwikkeling vraagt om moed. Benoem wie u wilt worden, kies een richting en begin ook als het moment nog niet ideaal voelt.",
+      have:"U bent gedreven in uw ontwikkeling. U weet wat u wilt en werkt ernaar toe. Laat uw ambitie ook ruimte voor groei die zich minder laat sturen?"
+    },
+    Water:{
+      want:"Uw persoonlijke ontwikkeling vraagt om zelfcompassie. Kunt u eerlijk bij uzelf blijven zonder direct te willen verbeteren wat u aantreft? Groei beklijft vaak beter als die laag mee mag doen.",
+      have:"U staat in goed contact met uw gevoelswereld. Laat dat bewustzijn ook doorwerken in hoe u met anderen omgaat, zodat uw ontwikkeling uw relaties ten goede komt."
+    },
+    Earth:{
+      want:"In uw persoonlijke ontwikkeling ligt de afstand tussen inzicht en handelen. Misschien begrijpt u uzelf goed en blijft het lastig om dat inzicht consequent om te zetten in gedrag.",
+      have:"U bent toegewijd en maakt af wat u begint. Laat die structuur ook ruimte voor groei die rommelig of onvoorspelbaar verloopt?"
+    }
+  }
+};
+
+const CORE_QUESTIONS={
+  Private:{
+    Ether:"Wat zou het betekenen om werkelijk aanwezig te zijn in uw eigen leven?",
+    Air:"Wanneer deed u voor het laatst iets in uw privéleven puur voor uw plezier?",
+    Fire:"Wat verlangt u werkelijk, los van wat u redelijk vindt om te willen?",
+    Water:"Is er een gesprek met iemand dichtbij u dat u uit de weg gaat?",
+    Earth:"Welke kleine verandering in uw dagelijkse ritme zou u meer houvast geven?"
+  },
+  Work:{
+    Ether:"Wat zou op uw werk nog de moeite waard zijn als alle verwachtingen wegvielen?",
+    Air:"Wat zou u op het werk proberen als fouten maken veilig voelde?",
+    Fire:"Wat staat u in vergaderingen telkens op het punt te zeggen?",
+    Water:"Heeft uw team iets van u nodig dat u tot nu toe niet wilde geven?",
+    Earth:"Wat begint u telkens zonder het af te maken, en wat heeft u nodig om het af te ronden?"
+  },
+  Development:{
+    Ether:"Wanneer bleef u voor het laatst bij echte onzekerheid zonder die meteen op te lossen?",
+    Air:"Wat zou u onderzoeken als uw ontwikkeling nergens nuttig voor hoefde te zijn?",
+    Fire:"Wie wilt u worden, en waarop wacht u nog om te beginnen?",
+    Water:"Hoe eerlijk gaat u met uzelf om als u uw eigen verwachtingen niet waarmaakt?",
+    Earth:"Welk inzicht keert telkens terug zonder dat u ernaar handelt?"
+  }
+};
+
+function domainNarrative(d,ranked){
+  const m=ranked[0];
+  const narratives=PLAIN_NARRATIVES[d.key][m.element.key];
+  return m.diff>0 ? narratives.want : narratives.have;
+}
+
+function coreQuestion(d,item){
+  return CORE_QUESTIONS[d.key][item.element.key];
+}
+
+function nextStepText(r){
+  if(state.person.goal==="Concrete first step") return "Begin waar het verschil tussen hoe het nu is en hoe u het wilt het grootst is. Daar kan een kleine verschuiving de meeste beweging geven.";
+  if(state.person.goal==="Conversation starter") return "Gebruik dit profiel als vertrekpunt voor een gesprek over wat vaak onuitgesproken blijft: waar u sterk in bent, waar u zich inhoudt en welke steun u verder helpt.";
+  return "Neem de tijd voor wat u het meest raakt in deze scan. U mag erbij stilstaan voordat u iets probeert op te lossen.";
+}
+
+function actionItems(r){
+  const top=r.topMoves[0];
+  const domainKey=top.domain.key;
+  const elemKey=top.element.key;
+
+  const ACTIONS={
+    Private:{
+      Ether:["Reserveer deze week dertig minuten zonder telefoon of agenda. Zoek een stille plek en merk op wat er naar boven komt.","Schrijf één ding op dat u in uw privéleven blijft uitstellen terwijl het u wel raakt.","Vertel iemand dichtbij u iets wat u normaal voor uzelf houdt."],
+      Air:["Plan deze week iets zonder praktisch doel waar u echt plezier aan beleeft.","Doe één ding in uw dagelijkse routine anders en merk op hoe het voelt.","Ga twintig minuten naar buiten zonder bestemming of podcast."],
+      Fire:["Schrijf op wat u in uw privéleven blijft verdragen terwijl het niet bij u past.","Zeg deze week één keer nee waar u uit gewoonte ja zou zeggen.","Spreek hardop uit wat u nu werkelijk wilt, voor uzelf of tegenover iemand die u vertrouwt."],
+      Water:["Voer thuis één gesprek met uw telefoon in een andere kamer.","Vraag iemand dichtbij u hoe het gaat en wacht lang genoeg om het antwoord echt te horen.","Deel met iemand die u vertrouwt iets waarover u werkelijk onzeker bent."],
+      Earth:["Kies één simpele routine die u ’s ochtends houvast geeft en doe die deze week elke dag.","Rond iets af wat half af is blijven liggen.","Maak één klein stukje ruimte in uw huis of agenda vrij dat u al een tijd bezighoudt."]
+    },
+    Work:{
+      Ether:["Reserveer deze week tijd in uw agenda om na te denken, zonder dat u iets hoeft op te leveren.","Schrijf één vraag over uw werk op waarvoor u uzelf steeds geen tijd geeft.","Vraag uzelf af wat u hier nog betekenisvol zou vinden als niemand toekeek."],
+      Air:["Pak één bekende werksituatie heel anders aan dan normaal.","Deel deze week een idee dat u meestal voor uzelf houdt omdat het ongebruikelijk voelt.","Wandel zonder telefoon vóór uw volgende belangrijke overleg of besluit."],
+      Fire:["Zeg deze week op het werk één ding dat u normaal afzwakt of voor uzelf houdt.","Neem deze week één besluit zonder op consensus te wachten en neem er verantwoordelijkheid voor.","Schrijf op wat u op het werk het liefst wilt veranderen en waar u nog geen actie op heeft ondernomen."],
+      Water:["Begin deze week één overleg door oprecht te vragen hoe het met de mensen gaat.","Voer één echt gesprek met een collega zonder agenda.","Benoem in uw team wat iedereen denkt en niemand zegt."],
+      Earth:["Kies een project of taak die blijft slepen. Rond het af of besluit expliciet om ermee te stoppen.","Maak een eenvoudige weekstructuur voor uzelf en houd die vijf dagen aan.","Rond deze week iets af voordat u iets nieuws begint."]
+    },
+    Development:{
+      Ether:["Neem deze week elke ochtend twintig minuten zonder telefoon, nieuws of podcast. Merk op wat er is.","Schrijf één overtuiging over uzelf op die u al jaren met u meedraagt en nog nooit heeft onderzocht.","Vraag uzelf dagelijks af wat u werkelijk denkt, los van wat u vindt dat u zou moeten denken."],
+      Air:["Doe deze week één ding uit nieuwsgierigheid, zonder doel.","Lees iets wat buiten uw gebruikelijke vakgebied of belangstelling ligt.","Geef uzelf toestemming om iets dat u begonnen bent niet af te maken. Merk op hoe dat voelt."],
+      Fire:["Schrijf op waar u over een jaar in uw ontwikkeling werkelijk wilt staan, los van wat haalbaar lijkt.","Kies een gewoonte of patroon waarvan u steeds zegt dat u het wilt veranderen. Zet deze week één concrete stap.","Vertel één persoon waar u aan werkt en waarom dat voor u belangrijk is."],
+      Water:["Vraag uzelf aan het eind van elke dag deze week wat u vandaag werkelijk heeft gevoeld. Schrijf één zin.","Merk het op als u strenger voor uzelf bent dan voor iemand die u respecteert. Pauzeer even.","Doe deze week één ding puur voor uw eigen welzijn, zonder het te rechtvaardigen."],
+      Earth:["Kies één inzicht dat terugkeert en schrijf drie concrete acties op waarmee u het in praktijk kunt brengen.","Maak een eenvoudig weekritme voor uw ontwikkeling en bescherm de tijd ervoor, al is het twintig minuten per dag.","Rond één boek, opname of oefening af waaraan u eerder bent begonnen."]
+    }
+  };
+
+  const actions = ACTIONS[domainKey]?.[elemKey] || [
+    "Kies deze week één situatie waarin u bewust let op wat er onder de oppervlakte speelt.",
+    "Schrijf op welk patroon u het vaakst opmerkt en waartegen het u beschermt.",
+    "Zet deze week één kleine stap naar de verandering die u wilt, ook als de omstandigheden nog niet ideaal zijn."
+  ];
+
+  if(r.patterns[0]) actions.push(`Neem deze vraag mee in een gesprek, in uw dagboek of naar een coachsessie: "${r.patterns[0].title}"`);
+  return actions;
+}
+
+function avg(v){return v.reduce((s,x)=>s+x,0)/v.length}function round(v){return Math.round(v*10)/10}function signed(v){return `${v>0?"+":""}${round(v)}`}
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+const LABELS_NL = {
+  "Ether": "Ether",
+  "Air": "Lucht",
+  "Fire": "Vuur",
+  "Water": "Water",
+  "Earth": "Aarde",
+  "Executive / leader": "Directielid of leidinggevende",
+  "Entrepreneur": "Ondernemer",
+  "Professional": "Professional",
+  "HR / coach": "HR-professional of coach",
+  "Academic / researcher": "Academicus of onderzoeker",
+  "Other": "Anders",
+  "Work pressure or balance": "Werkdruk of balans",
+  "Leadership": "Leiderschap",
+  "Team or collaboration": "Team of samenwerking",
+  "Meaning and purpose": "Betekenis en zingeving",
+  "Personal growth": "Persoonlijke groei",
+  "Choosing direction": "Richting kiezen",
+  "Insight": "Inzicht",
+  "Direction and priorities": "Richting en prioriteiten",
+  "Concrete first step": "Een concrete eerste stap",
+  "Conversation starter": "Een ingang voor een gesprek",
+  "Coaching reflection": "Reflectie voor coaching"
+};
+function optionList(options,selected){return options.map(o=>`<option ${o===selected?"selected":""} value="${escapeHtml(o)}">${LABELS_NL[o]}</option>`).join("")}
+
+render();
+</script>
+</body>
+</html>
